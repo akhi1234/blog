@@ -1,8 +1,30 @@
 import React, { useState } from 'react'
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import Modal from './Modal'
+
+function SaveDataToLocalStorage(data, key) {
+    let a = [];
+
+    a = JSON.parse(localStorage.getItem(key)) || [];
+    // Push the new data (whether it be an object or anything else) onto the array
+    a.push(data);
+    // Alert the array value
+
+    localStorage.setItem(key, JSON.stringify(a));
+}
 
 const AddPost = () => {
+
+
+    const [show, setShow] = useState(false);
+    const [checked, setChecked] = useState(false)
+
+    console.log(checked)
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
 
     const [value, setValue] = useState({
         title: "",
@@ -32,8 +54,26 @@ const AddPost = () => {
         setBlogError("")
     }
 
-    const handlePost = () => {
+    const handleClick = () => {
+        window.alert("Submitted")
+        handleClear()
+        SaveDataToLocalStorage({
+            title: value.title, desc: value.desc, blog, isPublish: checked
+        }, "postItems")
+        setShow(false)
+        setChecked(false)
+    }
 
+    const handlePublish = () => {
+        if (checked) {
+            setShow(true)
+        }else{
+            handleClick()
+        }
+        
+    }
+
+    const handlePost = () => {
         if (!value.title) {
             setValueError(prev => ({
                 ...prev, title: "Please Enter Title."
@@ -47,9 +87,7 @@ const AddPost = () => {
         else if (!blog) {
             setBlogError("Please Enter Blog.")
         } else {
-            window.alert("Submitted")
-            handleClear()
-            console.log("dsd")
+            handlePublish()
         }
 
     }
@@ -82,15 +120,22 @@ const AddPost = () => {
                 <label className='title-label'>Blog</label>
 
                 <ReactQuill theme="snow" value={blog} onChange={setBlog
-                } onE/>
+                } onE />
 
-                {  blogError && <span className='error-msg'>{blogError}</span>
+                {blogError && <span className='error-msg'>{blogError}</span>
                 }
             </div>
+
+
             <div className='title-input-box-container'>
+                <input type='checkbox' checked={checked} onChange={e => setChecked(e.target.checked)} />
                 <button className='btn' onClick={handlePost}>Post</button>
                 <button className='btn clear-btn' onClick={handleClear}>Clear</button>
             </div>
+
+            {
+                show && <Modal handleClick={handleClick} show={show} handleClose={() => setShow(false)} />
+            }
         </div>
     )
 }
